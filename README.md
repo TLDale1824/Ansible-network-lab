@@ -24,7 +24,7 @@ The architecture was successfully scaled into an enterprise-grade hybrid-cloud a
 ### Network Topology & Proxy Routing Architecture
 * **Control Node:** Local Linux Mint Desktop workstation executing agentless `ansible-core` automation modules.
 * **Bastion Host / Control Node Router:** Remote public cloud server acting as a secure SSH middleman proxy gateway.
-* **Private Virtual Infrastructure Switch:** An isolated Docker bridge network interface (`br-corporate`) initialized inside the Linux kernel on subnet `172.20.10.0/24`.
+* **Private Virtual Infrastructure Switch:** An isolated Docker bridge network interface (`br-corporate`) initialized inside the Linux kernel on subnet.
 * **Isolated Target Nodes:** Dual containerized environments (**Alpine Linux**) acting as secure endpoint workloads:
   * Container A: `target-web` (Corporate Web Target) at private IP
   * Container B: `target-db` (Corporate Database Target) at private IP 
