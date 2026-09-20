@@ -26,8 +26,8 @@ The architecture was successfully scaled into an enterprise-grade hybrid-cloud a
 * **Bastion Host / Control Node Router:** Remote public cloud server acting as a secure SSH middleman proxy gateway.
 * **Private Virtual Infrastructure Switch:** An isolated Docker bridge network interface (`br-corporate`) initialized inside the Linux kernel on subnet `172.20.10.0/24`.
 * **Isolated Target Nodes:** Dual containerized environments (**Alpine Linux**) acting as secure endpoint workloads:
-  * Container A: `target-web` (Corporate Web Target) at private IP `172.20.10.10`
-  * Container B: `target-db` (Corporate Database Target) at private IP `172.20.10.20`
+  * Container A: `target-web` (Corporate Web Target) at private IP
+  * Container B: `target-db` (Corporate Database Target) at private IP 
 
 ### Engineering Milestones Conquered
 1. **Nested SSH Proxy Handshaking:** Configured explicit `ProxyCommand` transport paths within the Ansible runtime, forcing execution traffic to pivot seamlessly through public perimeters down into private software-defined switches.
