@@ -1,0 +1,72 @@
+---
+- name: Deploy Isolated 3-Node Network Infrastructure
+  hosts: localhost
+  connection: local
+  become: true
+  tasks:
+
+    - name: Ensure HostAlpha Namespace Exists
+      ansible.builtin.command:
+        cmd: ip netns add HostAlpha
+      register: host_alpha_result
+      failed_when: false
+      changed_when: "'File exists' not in host_alpha_result.stderr"
+
+    - name: Ensure HostBeta Namespace Exists
+      ansible.builtin.command:
+        cmd: ip netns add HostBeta
+      register: host_beta_result
+      failed_when: false
+      changed_when: "'File exists' not in host_beta_result.stderr"
+
+    - name: Ensure RouterAlpha Namespace Exists
+      ansible.builtin.command:
+        cmd: ip netns add RouterAlpha
+      register: router_alpha_result
+      failed_when: false
+      changed_when: "'File exists' not in router_alpha_result.stderr"
+    - name: Bring HostAlpha Link and Loopback UP
+      ansible.builtin.command:
+        cmd: "{{ item }}"
+      loop:
+        - ip netns exec HostAlpha ip link set vethA-host up
+        - ip netns exec HostAlpha ip link set lo up
+
+    - name: Bring HostBeta Link and Loopback UP
+      ansible.builtin.command:
+        cmd: "{{ item }}"
+      loop:
+        - ip netns exec HostBeta ip link set vethB-host up
+        - ip netns exec HostBeta ip link set lo up
+
+    - name: Bring RouterAlpha Links and Loopback UP
+      ansible.builtin.command:
+        cmd: "{{ item }}"
+      loop:
+        - ip netns exec RouterAlpha ip link set vethA-router up
+        - ip netns exec RouterAlpha ip link set vethB-router up
+        - ip netns exec RouterAlpha ip link set lo up
+
+    - name: Assign IP Addresses to All Interfaces
+      ansible.builtin.command:
+        cmd: "{{ item }}"
+      loop:
+        - ip netns exec HostAlpha ip addr add 10.0.1.2/24 dev vethA-host
+        - ip netns exec HostBeta ip addr add 10.0.2.2/24 dev vethB-host
+        - ip netns exec RouterAlpha ip addr add 10.0.1.1/24 dev vethA-router
+        - ip netns exec RouterAlpha ip addr add 10.0.2.1/24 dev vethB-router
+      failed_when: false
+
+    - name: Establish Host Default Gateways
+      ansible.builtin.command:
+        cmd: "{{ item }}"
+      loop:
+        - ip netns exec HostAlpha ip route add default via 10.0.1.1
+        - ip netns exec HostBeta ip route add default via 10.0.2.1
+      failed_when: false
+
+    - name: Activate Kernel Packet Forwarding Engine (ip routing)
+      ansible.builtin.sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        sysctl_set: true
