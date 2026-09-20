@@ -1,0 +1,35 @@
+---
+- name: Environment Teardown and Clean Wipe
+  hosts: localhost
+  connection: local
+  become: true
+  gather_facts: false
+
+  vars:
+    test_interface: "dummy0"
+
+  tasks:
+    - name: 1. Flush all current iptables rules
+      ansible.builtin.iptables:
+        chain: "{{ item }}"
+        flush: true
+      loop: ['INPUT', 'FORWARD', 'OUTPUT']
+
+    - name: 2. Set default iptables policies to ACCEPT
+      ansible.builtin.iptables:
+        chain: "{{ item }}"
+        policy: ACCEPT
+      loop: ['INPUT', 'FORWARD', 'OUTPUT']
+
+    - name: 3. Delete custom user-defined iptables chains
+      ansible.builtin.command: iptables -X
+      changed_when: true
+
+    - name: 4. Tear down the test network interface
+      ansible.builtin.command: "ip link delete {{ test_interface }}"
+      failed_when: false
+      changed_when: true
+
+    - name: 5. Log teardown completion status
+      ansible.builtin.debug:
+        msg: "Teardown complete. Network state has been successfully reset to default."
